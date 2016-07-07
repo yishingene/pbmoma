@@ -61,6 +61,8 @@ SET(BOOST_INC /usr/include "Boost include directory")
 INCLUDE_DIRECTORIES( 
 	${OPENCV_INC} 
 	${BOOST_INC}
+	${SRC}/helpers
+	${SRC}/pipeline
 )
 LINK_DIRECTORIES( 
 	${OPENCV_LIB} 
@@ -82,8 +84,8 @@ ADD_EXECUTABLE(pbmoma
 	${SRC}/main.cpp
 )
 TARGET_LINK_LIBRARIES(pbmoma
-#	pipeline
-	helpers
+	pipeline
+#	helpers
 	opencv_core 
 	opencv_video
 	opencv_calib3d 

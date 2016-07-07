@@ -9,14 +9,15 @@
 #include <vector>
 #include <string>
 
-#include <Eigen/Core>
+#include <eigen2/Eigen/Core>
 
 /// Reading and writing of data.
 class DataHandler
 {
-	typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Frame;
-	typedef std::vector<Frame> Video;
 	public:
+		typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Frame;
+		typedef std::vector<Frame> Video;
+
 		DataHandler(const std::string &videoPath)
 		: videoPath_(videoPath)
 		{}

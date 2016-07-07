@@ -16,14 +16,12 @@ DataHandler::Video DataHandler::readVideo()
 	Video dataVideo;
     for(;;)
 	{
+		cv::Mat intFrame;
+        capture >> intFrame; // get a new frame from camera
+        cv::cvtColor(intFrame, intFrame, CV_BGR2GRAY);
 		cv::Mat frame;
-        capture >> frame; // get a new frame from camera
-        cv::cvtColor(frame, frame, CV_BGR2GRAY);
-
-		Frame dataFrame = Eigen::Map<Frame>(frame.rows(), frame.cols(), frame.data());
-
-std::cout<<"One frame:"<<dataFrame<<std::endl;
-
+		intFrame.convertTo(frame, CV_32FC1);
+		Frame dataFrame = Eigen::Map<Frame>(reinterpret_cast<float*>(frame.data), frame.rows, frame.cols);
 		dataVideo.emplace_back(dataFrame);	
     }
     return dataVideo;
