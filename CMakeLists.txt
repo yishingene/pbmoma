@@ -70,7 +70,8 @@ LINK_DIRECTORIES(
 )
 
 ADD_LIBRARY(pipeline
-#	${SRC}/pipeline/Filer.cpp
+	${SRC}/pipeline/MotionMagnification.cpp
+	${SRC}/pipeline/TemporalFilter.cpp
 	${SRC}/pipeline/DataHandler.cpp
 )
 #ADD_LIBRARY(helpers  

@@ -1,0 +1,126 @@
+    -------------------------------------------------------------------
+---		   Steerable Pyramid Software Library			---
+---     Designed by Eero Simoncelli, Rob Buccigrassi and Hany Farid.	---
+---    		 Original Concept: see references below.		---
+---		      Source code by Rob Buccigrassi.	 		---
+---   Filter designs by Eero Simoncelli and Anestis Karasaridis.	---
+---         Developed at the GRASP Laboratory, Computer and 		---
+---	Information Science  Department, University of Pennsylvania.	---
+---	        Copyright 1995, University of Pennsylvania 		---
+---			 All rights reserved.				---
+    -------------------------------------------------------------------
+Permission to use, copy, or modify this software and its documentation
+for educational and research purposes only and without fee is hereby
+granted, provided that this copyright notice and the original authors'
+names appear on all copies and supporting documentation.  For any
+other uses of this software, in original or modified form, including
+but not limited to distribution in whole or in part, specific prior
+permission must be obtained from University of Pennsylvania and the
+authors.  These programs shall not be used, rewritten, or adapted as
+the basis of a commercial software or hardware product without first
+obtaining appropriate licenses from U. Pennsylvania.  The University
+makes no representations about the suitability of this software for
+any purpose.  It is provided "as is" without express or implied
+warranty.
+    ----------------------------------------------------------------------
+
+The following is an important subset of the functions in this pyramid
+library.  Please see the header files for a list of all the available
+functions.
+
+There are three primary data structures in this library:  PFILTER (the
+set of filters used to construct and collapse a pyramid), PYRAMID (the
+set of subbands that result from applying pyramid filters to an image), and
+MATRIX (the representation of a matrix or grayscale image).
+
+Pyramid Filter Functions (spyramid.h):
+
+   PFILTER LoadPFilter(char *filename)
+	Loads the file given in "filename" into a PFILTER structure.  If
+	there is an error, LoadPFilter returns NULL.
+
+   MATRIX GetHighbandFilter(PFILTER P);
+	Given a PFILTER structure, this returns the matrix of the highband
+	filter (H0 of the diagram in the README file).  
+	Since MATRIX is actually a pointer, any modification made
+	to the resulting matrix will actually modify the highband filter of
+	the pyramid filter set.
+
+   MATRIX GetFirstLowbandFilter(PFILTER P);
+	Given a PFILTER structure, this returns the matrix of the first
+	lowband filter (L0 of the diagram in the README file).
+	Since MATRIX is actually a pointer, any modification made
+	to the resulting matrix will actually modify the lowband filter of
+	the pyramid filter set.
+
+   MATRIX GetSecondLowbandFilter(PFILTER P);
+	Given a PFILTER structure, this returns the matrix of the second
+	lowband filter (L1 of the diagram in the README file).
+	Since MATRIX is actually a pointer, any modification made
+	to the resulting matrix will actually modify the lowband filter of
+	the pyramid filter set.
+
+   MATRIX GetSubbandFilter(PFILTER P, int subband_number);
+	This returns the subband filter with the given number (the first
+	subband has number 0).  Again, it returns a pointer to the
+	actual subband filter in the pyramid filter set.
+
+
+Pyramid functions (spyramid.h):
+	
+   PYRAMID CreatePyramid(MATRIX image, PFILTER pf, int levels);
+	This creates a pyramid out of the given image and pyramid filter
+	set.  The number of levels in the pyramid is set by the "levels"
+	argument.
+
+   MATRIX SteerPyramid(PYRAMID pyr, int level, float angle);
+	This returns a steering of the subbands at the given level (the
+	first level being level 0) at the given angle.
+
+   MATRIX SteerPyramidPointwise(PYRAMID pyr, int level, MATRIX angles);
+	Given a matrix of angles (which must be the same size as the
+	subband at the specified level), it returns a steering of the
+	subbands at the given level (the first level being level 0) so that
+	point (x,y) of the resulting matrix is at the angle specified at
+	point (x,y) of the matrix "angles".
+
+   MATRIX CollapsePyramid(PYRAMID pyr);
+	This returns the matrix that is the result of collapsing the
+	pyramid.
+
+   MATRIX GetHighbandImage(PYRAMID pyr);
+   MATRIX GetLowbandImage(PYRAMID pyr);
+	This returns the highband and lowband respectively of the pyramid.
+	Since MATRIX is actually a pointer, it returns the actual matrix
+	in the pyramid.
+
+   MATRIX GetSubbandImage(PYRAMID pyr, int level, int subband_number);
+	This returns the subband image at the given level (starting at 0)
+	and the given subband number (starting at 0) of the pyramid.
+	Since MATRIX is a pointer, it returns the actual matrix in the
+	pyramid.
+	
+
+Pyramid and Pfilter display functions (spyramid_pgm.h):
+
+   void DisplayPfilter(PFILTER PF,int idispwin,char* name,int xloc, int yloc);
+	This displays the filters of a pyramid filter on window number
+	"idispwin" (starting at 0).  The title of the window is the string
+	"name" and it appears at location (xloc,yloc).
+
+   void DisplayPyramid(PYRAMID pyr, int subband, int idispwin, char* name,
+                    int xloc, int yloc);
+	This displays a pyramid on window number "idispwin" (starting at 0).
+	The title of the window displayed is "name", and appears at
+	location (xloc, yloc).
+
+Matrix functions (matrix,h):
+
+   matrix.h has the prototpyes of a rather extensive library of matrix
+	routines, including loading and saving to files, multiplying, adding
+	and convolving.
+
+Matrix display functions (matrix_pgm.h):
+
+   matrix_pgm.h has the prototypes of routines that can save matrices as
+	PGM files and display matrices on X windows.

@@ -1,0 +1,180 @@
+    -------------------------------------------------------------------
+---		   Steerable Pyramid Software Library			---
+---     Designed by Eero Simoncelli, Rob Buccigrassi and Hany Farid.	---
+---    		 Original Concept: see references below.		---
+---	   Source code by Rob Buccigrassi and Eero Simoncelli.	 	---
+---   Filter designs by Eero Simoncelli and Anestis Karasaridis.	---
+---         Developed at the GRASP Laboratory, Computer and 		---
+---	Information Science  Department, University of Pennsylvania.	---
+---	        Copyright 1995, University of Pennsylvania 		---
+---			 All rights reserved.				---
+    -------------------------------------------------------------------
+Permission to use, copy, or modify this software and its documentation
+for educational and research purposes only and without fee is hereby
+granted, provided that this copyright notice and the original authors'
+names appear on all copies and supporting documentation.  For any
+other uses of this software, in original or modified form, including
+but not limited to distribution in whole or in part, specific prior
+permission must be obtained from University of Pennsylvania and the
+authors.  These programs shall not be used, rewritten, or adapted as
+the basis of a commercial software or hardware product without first
+obtaining appropriate licenses from U. Pennsylvania.  The University
+makes no representations about the suitability of this software for
+any purpose.  It is provided "as is" without express or implied
+warranty.
+    ----------------------------------------------------------------------
+
+The Steerable Pyramid is a multi-scale, multi-orientation image
+decomposition that provides a useful front-end for many computer
+vision and image-processing applications [2,3].  The transformation is
+a type of overcomplete Wavelet transform (specifically, it is an
+approximation of a "tight frame").  It has the advantage that the
+subbands are both translation- and rotation-invariant.
+
+The filter bank used to construct the pyramid is polar-separable in
+the Fourier domain.  The scale tuning of the filters is constrained by
+a recursive system diagram (described below).  The orientation tuning
+is constrained by requiring the property of steerability [1].  A set
+of filters form a steerable basis if they 1) are rotated copies of
+each other, and 2) a copy of the filter at any orientation may be
+computed as a linear combination of the basis filters.  The simplest
+examples of steerable filters is a set of N+1 Nth-order directional
+derivatives.
+
+In addition to having steerable orientation subbands, the transform we
+describe is designed to be "self-inverting" (i.e., it is a "tight
+frame"), and is approximately aliasing-free.  Most importantly, the
+pyramid can be designed to produce any number of orientation bands,
+k.  The resulting transform will be overcomplete by a factor of
+4k/3.    The basic system diagram is illustrated below:
+
+   ---- H0 ------------------+------------------------H0 ----
+     |                                                    |
+     -- L0 --- Bi -----------o---------------- Bi --- L0 --
+            |                                      |
+            -- L1 -- 2v -----*---------- 2^ -- L1 --
+
+   H0: highpass initialization filter.  L0: lowpass initialization filter.
+   Bi: set of k steerable bandpass filters.  L1: lowpass filter. 
+   2v: downsample by 2.   2^: upsample by 2.  +: highpass coefficients
+   o: oriented bandpass coefficients.  *: lowpass coefficients.  
+   Pyramid recursion is achieved by inserting the subportion of the diagram 
+	containing the Bi and L1 branches at the location of the *.
+
+======================================================================
+The C software provided in this distribution will build, manipulate,
+and reconstruct steerable pyramid decompositions.  Please see
+README.functions for a list of the function prototypes and
+descriptions.  
+
+We also provide a set of demonstration programs that build and display
+steerable pyramids.  These are written for UNIX/X-windows platforms
+(sorry, no PC or Mac versions yet).
+
+*******>>> As of 4/97, there is also MatLab code available for
+manipulating Steerable (and other) pyramids.  Check the web site at
+www.cis.upenn.edu/~eero/steerpyr.html.
+
+To get a copy of the C source code, create the software library, and run
+the demos:
+
+0) Ftp the source from ftp.cis.upenn.edu (IP address 158.130.12.3),
+   from file pub/eero/steerpyr.tar.Z.  This is a unix-compressed
+   "tar" file -- don't forget to put ftp into binary mode.
+1) unpack the compressed tarfile:
+	> cd <directory-where-you-want-this-code>
+	> uncompress steerpyr.tar.Z
+	> tar xvf steerpyr.tar
+2) Compile:
+	> cd Src
+	> make
+	[you may need to modify the pathnames in the Makefile] 
+3) Run demo programs (UNIX/X-windows only):
+	> cd ../Demo
+	> show_pfilter -f spfilter.3
+	> show_pyramid -f spfilter.1 -p image2 -l 3 -s 0
+	> show_steer -f spfilter.3 -p image2 -l 1
+
+Executing any of the demo programs with NO arguments will give a list
+of arguments.  For the latter two programs, the "-l" argument is limited
+to be less than floor(log2(D/9)), where D is the smallest dimension of
+the input image.  Demo programs are as follows:
+
+show_pfilter -f filter_file
+   display the filter kernels from the "filter_file" in an X window:
+	Top row: L1, L0, H0.  
+	Bottom row: oriented kernels B_k.
+   We provide 3 filter files, which are described below.
+
+show_pyramid -f filter_file -p image_file -l numlevels -s subband
+   decompose the image in the file "image_file" into a pyramid using
+   the filters in "filter_file".  "numlevels" specifies the number of
+   pyramid levels (i.e., scales) in the decomposition.  An X window
+   will appear containing the following: 
+	1) upper left: the reconstructed image (nearly identical to 
+	   the original) 
+	2) upper right: highpass residual image
+	3) bottom, left to right: subbands at a fixed orientation (specified 
+	   by the -s parameter, a number between 0 and N-1, where N 
+	   is the number of orientation bands), shown at each scale, and
+	4) bottom right: the lowpass residual.
+
+show_steer -f filter_file -p image_file -l numlevel
+   display a movie (containing 30 frames) of a continuously rotating,
+   steered (interpolated) subband at a scale specified by "numlevel" 
+   (numbering starts at 0).
+
+
+FILTERS: several filter sets are provided:
+   spfilter.0 - non-oriented bandpass filters.  Use as a
+	"self-inverting" replacement for  the Laplacian pyramid.
+   spfilter.1 - 2-orientation-band filter set.  These are essentially
+	first derivative filters.
+   spfilter.3 - 4-orientation-band filter set.  Third derivatives.
+
+IMAGES: Two example images are provided with the source code: 
+   image1 - a "zone plate" image, providing all orientations and spatial frequencies.
+   image2 - a photograph of Albert Einstein.  
+The demonstration programs will only operate on grayscale images, and
+the display code only works on framebuffers at least 8bits deep.  The
+demo programs will read two file formats:
+  1) ASCII PGM (this is read/writable by the XV image utility).
+  2) An internal "matrix" format, which consists of an ascii file containing
+	a) Two integers (separated by whitespace) containing the number of rows
+	   and columns.
+        b) a space-delimited set of floating point numbers listed
+                in row order  (i.e. from left to right) where the top
+                row is given first.  The maximum number will be displayed
+                as white, and the minimum will be displayed as black.
+
+Comments, suggestions, or questions should be sent to:
+	eero@central.cis.upenn.edu
+
+======================================================================
+REFERENCES:
+
+[1] William T Freeman and Edward H Adelson, "The Design and Use of 
+        Steerable Filters".  _IEEE Trans. Patt. Anal. Mach. Intell._, 
+	Vol 13 Num 9, pp 891-906, September 1991.
+
+[2] Eero P Simoncelli, William T Freeman, Edward H Adelson, and David J Heeger,
+	"Shiftable Multi-scale Transforms", _IEEE Trans. Information Theory:
+	Special Issue on Wavelets_, Vol 38 Num 2, pp 587-607, March 1992.
+	Available on the Web as: http://ftp.cis.upenn.edu/pub/eero/simoncell91.ps.gz
+
+[3] Eero P Simoncelli and William T Freeman, "The Steerable Pyramid: A 
+	Flexible Architecture for Multi-Scale Derivative Computation",
+	_2nd IEEE Int'l Conf on Image Processing: Washington, DC_,
+	November, 1995.  
+	Available on the Web as: http://ftp.cis.upenn.edu/pub/eero/simoncell95b.ps.gz
+
+[4] A Karasaridis and E P Simoncelli, "Filter Design Technique for Steerable 
+	Pyramid Image Transforms", _International Conference on 
+  	Acoustics, Speech, and Signal Processing: Atlanta, GA_,
+	May, 1996.  
+	Available on the Web as: http://ftp.cis.upenn.edu/pub/eero/karasaridis96.ps.Z
+
+[5] E P Simoncelli and E H Adelson. "Noise Removal via Bayesian Wavelet Coring.",
+	_2nd IEEE Int'l Conf on Image Processing: Laussanne, Switzerland_,
+	September, 1996.
+	Available on the Web as: http://ftp.cis.upenn.edu/pub/eero/simoncelli96c.ps.Z

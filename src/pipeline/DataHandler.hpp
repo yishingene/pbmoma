@@ -10,13 +10,13 @@
 #include <string>
 
 #include <eigen2/Eigen/Core>
+#include <opencv2/opencv.hpp>
 
 /// Reading and writing of data.
 class DataHandler
 {
 	public:
 		typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Frame;
-		typedef std::vector<Frame> Video;
 
 		DataHandler(const std::string &videoPath)
 		: videoPath_(videoPath)
@@ -24,7 +24,7 @@ class DataHandler
 
 		virtual ~DataHandler(){}
 
-		Video readVideo();
+		cv::VideoCapture initVideo();
 	private:
 		std::string videoPath_;	 /// Path to the video location.	
 };
