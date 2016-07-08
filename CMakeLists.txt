@@ -48,7 +48,7 @@ SET(OPENCV_INC /usr/local/include CACHE PATH "Location of the OpenCV2.4 headers"
 SET(OPENCV_LIB /usr/local/lib CACHE PATH "Location of the OpenCV2.4 libraries")
 
 # Paths to eigen stuff____________________________________________________
-SET(EIGEN_INC /usr/include CACHE PATH "Location of the Eigen headers")
+SET(EIGEN_INC /usr/include/eigen3 CACHE PATH "Location of the Eigen headers")
 SET(EIGEN_LIB /usr/local/lib CACHE PATH "Location of the Eigen libraries?")
 
 # Paths to boost stuff______________________________________________________ 
@@ -61,6 +61,7 @@ SET(BOOST_INC /usr/include "Boost include directory")
 INCLUDE_DIRECTORIES( 
 	${OPENCV_INC} 
 	${BOOST_INC}
+	${EIGEN_INC}
 	${SRC}/helpers
 	${SRC}/pipeline
 )

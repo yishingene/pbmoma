@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 
-#include <eigen2/Eigen/Core>
+#include <Eigen/Core>
 #include <opencv2/opencv.hpp>
 
 /// Reading and writing of data.

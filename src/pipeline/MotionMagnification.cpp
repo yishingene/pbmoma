@@ -2,7 +2,7 @@
  * Author: Silvia-Laura Pintea
  */
 
-#include <eigen2/Eigen/Core>
+#include <Eigen/Core>
 
 #include <TemporalFilter.hpp>
 #include "MotionMagnification.hpp"
@@ -29,8 +29,8 @@ cv::waitKey(0);
 
 		// Add the frame to the window buffer.		
 		window.addFrame(std::move(dataFrame));	
-		Video videoWindow = window.getWindow();
-		if( videoWindow.empty() ) 	
+		Frame videoWindow = window.getWindow();
+		if( videoWindow.size() ) 	
 		{
 			continue; 
 		}
