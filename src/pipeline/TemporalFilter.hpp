@@ -16,14 +16,15 @@
 class TemporalFilter
 {
 	public:
-		typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Frame;
-		typedef std::vector<Frame> Video;
+		typedef Eigen::Matrix<float, 1, Eigen::Dynamic> Frame; // One frame reshaped as row.
+		typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> ReshapedVideo; // Multiple frames, each one row.
+		typedef std::vector<Frame> Video; // Vector of frames, each one row. 
 
 		TemporalFilter(){}
 
 		virtual ~TemporalFilter(){}
 
-		virtual Frame filter(const Frame& input) = 0;
+		virtual ReshapedVideo filter(const ReshapedVideo& input) = 0;
 	private:
 };
 
@@ -31,8 +32,9 @@ class TemporalFilter
 class SlidingWindow
 {
 	public:
-		typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Frame;
-		typedef std::vector<Frame> Video;
+		typedef Eigen::Matrix<float, 1, Eigen::Dynamic> Frame; // One frame reshaped as row.
+		typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> ReshapedVideo; // Multiple frames, each one row.
+		typedef std::vector<Frame> Video; // Vector of frames, each one row. 
 
 		SlidingWindow(size_t size = 2, size_t step = 1)
 		: size_(size),
@@ -42,7 +44,8 @@ class SlidingWindow
 		virtual ~SlidingWindow() {}
 
 		void addFrame(const Frame &&frame);	
-		Frame getWindow();
+		Video convertReshapedVideoToVideo(ReshapedVideo &input);
+		ReshapedVideo getWindow();
 	protected: 
 		std::size_t size_; /// Temporal window size.
 		std::size_t step_; /// Frame step between the temporal windows.
@@ -62,8 +65,8 @@ class IdealFilter : public TemporalFilter
 		{}
 
 		virtual ~IdealFilter() {}
-
-		virtual Frame filter(const Frame &input) override;	
+		std::vector<float> getFFTFreq(std::size_t n);
+		virtual ReshapedVideo filter(const ReshapedVideo &input) override;	
 	protected:
 		std::size_t fps_; /// Frames per second.
 		float lowFreq_; /// The low frequency threshold.
@@ -82,7 +85,7 @@ class IdealFilterWindowed : public IdealFilter
 
 		virtual ~IdealFilterWindowed() {}
 
-		Frame windowFilter(const TemporalFilter::Frame &&input, const std::function<Frame(const Frame&)> &function=nullptr);
+		Video windowFilter(TemporalFilter::Video &input, const std::function<Frame(const Frame&)> &function=nullptr);
 	protected:
 		SlidingWindow window_; /// The temporal sliding window.
 };

@@ -25,11 +25,11 @@ cv::waitKey(0);
 
 		cv::Mat frame;
 		intFrame.convertTo(frame, CV_32FC1);
-		Frame dataFrame = Eigen::Map<Frame>(reinterpret_cast<float*>(frame.data), frame.rows, frame.cols);
+		Frame dataFrame = Eigen::Map<Frame>(reinterpret_cast<float*>(frame.data), 1, frame.rows * frame.cols);
 
 		// Add the frame to the window buffer.		
 		window.addFrame(std::move(dataFrame));	
-		Frame videoWindow = window.getWindow();
+		ReshapedVideo videoWindow = window.getWindow();
 		if( videoWindow.size() ) 	
 		{
 			continue; 
@@ -37,4 +37,9 @@ cv::waitKey(0);
 
 		// Filter the video window.
     }
+}
+
+void MotionMagnification::writeFramesToDisk(const Video &video)
+{
+	// TODO
 }
