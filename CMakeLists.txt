@@ -43,6 +43,8 @@ endif(COMMAND cmake_policy)
 ##################################################################################### 
 ### SET LOCAL STUFF ################################################################# 
 ##################################################################################### 
+SET(CATCH_INC /usr/include/ CACHE PATH "Location of the CATCH headers")
+
 # Paths to opencv stuff____________________________________________________
 SET(OPENCV_INC /usr/local/include CACHE PATH "Location of the OpenCV2.4 headers")
 SET(OPENCV_LIB /usr/local/lib CACHE PATH "Location of the OpenCV2.4 libraries")
@@ -62,12 +64,14 @@ INCLUDE_DIRECTORIES(
 	${OPENCV_INC} 
 	${BOOST_INC}
 	${EIGEN_INC}
-	${SRC}/helpers
+	${CATCH_INC}
+#	${SRC}/helpers
 	${SRC}/pipeline
 )
 LINK_DIRECTORIES( 
 	${OPENCV_LIB} 
 	${BOOST_LIB}
+#	${CATCH_INC}
 )
 
 ADD_LIBRARY(pipeline
@@ -80,12 +84,16 @@ ADD_LIBRARY(pipeline
 #)
 
 ##################################################################################### 
-### EXECUTABLE STUFF ################################################################ 
+### EXEC & TESTS STUFF ############################################################## 
 ##################################################################################### 
-ADD_EXECUTABLE(pbmoma
+#add_library(Catch INTERFACE)
+#target_include_directories(Catch INTERFACE ${CATCH_INC})
+
+add_executable(pbmoma
+	${SRC}/tests/FilterTests.cpp
 	${SRC}/main.cpp
 )
-TARGET_LINK_LIBRARIES(pbmoma
+target_link_libraries(pbmoma
 	pipeline
 #	helpers
 	opencv_core 
@@ -101,5 +109,4 @@ TARGET_LINK_LIBRARIES(pbmoma
 	boost_thread
 	boost_filesystem
 	boost_system
-)	
-
+)

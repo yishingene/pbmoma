@@ -20,8 +20,9 @@ void MotionMagnification::process(DataHandler &dataHandler)
         capture >> intFrame; 
         cv::cvtColor(intFrame, intFrame, CV_BGR2GRAY);
 
-cv::imshow("frame", intFrame);
-cv::waitKey(0);
+		// TODO: remove this
+		cv::imshow("frame", intFrame);
+		cv::waitKey(0);
 
 		cv::Mat frame;
 		intFrame.convertTo(frame, CV_32FC1);
