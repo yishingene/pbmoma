@@ -26,19 +26,32 @@ int main()
 		2.06896552,  2.17241379,  2.27586207,  2.37931034,  2.48275862,
 		2.5862069 ,  2.68965517,  2.79310345,  2.89655172,  3.        };
 	float noise = 4.0f;
-	std::array<float, 30> fq1, fq2, fq3, data;
-
-	for(std::size_t i=0; i<30; ++i)
+	std::array<float, 30> fq1, fq2, fq3;
+	
+	TemporalFilter::Video data;
+	data.reserve(secs * fps);
+	
+	std::cout<<"Input:";
+	for(std::size_t i=0; i<secs*fps; ++i)
 	{
 		fq1[i] = std::sin(ts[i] * 2.0f * M_PI * 1.0f);
 		fq2[i] = std::sin(ts[i] * 2.0f * M_PI * 7.0f);
 		fq3[i] = std::sin(ts[i] * 2.0f * M_PI * 12.0f);
-		data[i] = fq1[i] * 1.0f + fq2[i] * 1.0f + fq3[i] + noise;
+	
+		TemporalFilter::Frame dataI = TemporalFilter::Frame(1,1);
+		float val = fq1[i] * 1.0f + fq2[i] * 1.0f + fq3[i] + noise;
+
+		std::cout<<" "<<val;
+
+		dataI.setConstant(val);
+		data.emplace_back(dataI);
 	}
-	
-	IdealFilterWindowed window(60, 1, fps, 4.0f, 9.0f); 
-	window.addFrame(data);
-	TemporalFilter Frame output = window.filterWindow(data);
-	
-	std::cout<<output.col(0)<<std::endl;
+
+	IdealFilterWindowed window(10, 1, fps, 4.0f, 9.0f); 
+
+	TemporalFilter::Video output = window.windowFilter(data);
+
+	for(int i = 0; i<output.size(); ++i){
+		std::cout<<"output[i]:"<<output[i]<<std::endl;
+	}	
 }

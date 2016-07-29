@@ -43,9 +43,11 @@ SlidingWindow::ReshapedVideo SlidingWindow::getWindow()
 		output.resize(size_, buffer_[0].cols() * buffer_[0].rows()); // rows x cols
 		for(std::size_t i=0; i<size_; ++i)
 		{
-			output.row(i) = Eigen::Map<Frame>(buffer_[0].data(), output.cols(), 1);
-			buffer_.erase(buffer_.begin()); 
+			output.row(i) = Eigen::Map<Frame>(buffer_[i].data(), output.cols(), 1);
 		}
+			
+		// At each iteration just remove the last one.	
+		buffer_.erase(buffer_.begin()); 
 	}
 	return output;
 }
@@ -58,16 +60,16 @@ SlidingWindow::ReshapedVideo SlidingWindow::getWindow()
 std::vector<float>
 IdealFilter::getFFTFreq(std::size_t n)
 {
-	std::vector<float> fftFreq(0, n);
+	std::vector<float> fftFreq(n, 0);
 	for(std::size_t i=1; i<n; ++i)
 	{
 		if(n%2 == 0)
 		{
-			fftFreq[i] = static_cast<float>(i <= (n/2 - 1)? i : i-n);
+			fftFreq[i] = static_cast<float>(i <= (n/2 - 1)? i : static_cast<float>(i)-static_cast<float>(n));
 		}
 		else
 		{
-			fftFreq[i] = static_cast<float>(i <= (n-1)/2? i : i-n);
+			fftFreq[i] = static_cast<float>(i <= (n-1)/2? i : static_cast<float>(i)-static_cast<float>(n));
 		}
 		fftFreq[i] /= (static_cast<float>(n) * 1.0/static_cast<float>(fps_));
 	}
@@ -84,38 +86,29 @@ IdealFilter::filter(const TemporalFilter::ReshapedVideo &input)
 {
 	ReshapedVideo output(input.rows(), input.cols());
 	
-	// Get the FFT from the input.
-
-std::cout<<"here -1"<<std::endl;
-	Fourier fft = Fourier(input.rows(), input.cols());
-
-std::cout<<"here 0"<<std::endl;
-
-std::cout<<"here 1"<<std::endl;
-
-	std::vector<float> fftFreq = getFFTFreq(input.cols());
-
-std::cout<<"here 2"<<std::endl;
-
 	// Define frequency: (1:n)-1 / (nd) and mask it with the thresholds. 
+	std::vector<float> fftFreq = getFFTFreq(input.rows());
+
+	// Get the FFT.
+	Fourier fft = Fourier(input.rows(), input.cols());
 	for(std::size_t col=0; col<input.cols(); ++col) 
 	{
 		// Fourier transform per col.
 		fft_.fwd(fft.col(col).data(), input.col(col).data(), input.rows());
-		if(!(fftFreq[col] >= lowFreq_ && fftFreq[col] <= highFreq_))
+
+		// Make the rows 0 or not.
+		for(std::size_t row=0; row<input.rows(); ++row)
 		{
-			fft.col(col).setConstant(0);
-		} 
-
+			if(!(std::abs(fftFreq[row]) >= lowFreq_ && std::abs(fftFreq[row]) <= highFreq_))
+			{
+				fft(row,col) = Eigen::FFT<float>::Complex(0);
+			}
+		}
+	
+		// Convert it back or not.
 		fft_.inv(output.col(col).data(), fft.col(col).data(), input.rows()); // Automatic size determination.	
+
 	} // Over time per pixel
-
-std::cout<<"here 3"<<std::endl;
-
-	//	Invert back the FFT.
-
-std::cout<<"fft-output:"<<output<<std::endl;
-
 	return output;
 }
 
@@ -130,28 +123,24 @@ TemporalFilter::Video IdealFilterWindowed::windowFilter(
 	while(!input.empty())
 	{
 		window_.addFrame(std::move(input[0]));
-		input.erase(input.begin());
 		ReshapedVideo data = window_.getWindow();
+		input.erase(input.begin());
 
 		if(data.size())
 		{
-std::cout<<"Windowed data:"<<data<<std::endl;
-
-			ReshapedVideo filtered;
-			if(function != nullptr)
-			{	
-				filtered = function(filter(data));
-			}
-			else
-			{
-				filtered = filter(data);
-			}
+			ReshapedVideo filtered = filter(data);
 
 			// Emplace the video frames back into the output.
 			Video tovideo = window_.convertReshapedVideoToVideo(filtered);
-			for(auto &&video : tovideo)
+
+			// Only the first video frame get processed and added back.
+			if(function != nullptr)
+			{	
+				output.emplace_back(function(tovideo[0]));
+			}
+			else
 			{
-				output.emplace_back(video);
+				output.emplace_back(tovideo[0]);
 			}
 		}
 	}
